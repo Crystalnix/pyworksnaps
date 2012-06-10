@@ -42,7 +42,8 @@ class Time(Namespace):
             query['time_entry_type'] = 'online' if only_online else 'offline'
         result = self.get(url, query)
         result = result['time_entries']
-        return result['time_entry'] if result else []
+        result = result['time_entry'] if result else []
+        return result if isinstance(result, list) else [result]
 
     def update_time_entry(self, project, entry, task, user_comment):
         result = self.put( self.__get_url(project, entry), data = {'task_id': task, 'user_comment': user_comment} )
