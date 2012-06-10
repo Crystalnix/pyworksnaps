@@ -22,7 +22,7 @@ __author__ = 'Kirill Yakovenko, kirill.yakovenko@gmail.com'
 import urllib
 import urllib2
 
-from xml.etree import cElementTree
+from collections import defaultdict
 
 from worksnaps.exceptions import *
 from worksnaps.auth import BasicAuth
@@ -35,12 +35,20 @@ errors = { 400: HTTP400BadRequestError,
            422: HTTP422UnprocessableEntityError,
            500: HTTP500ServerError }
 
-def raise_http_error(e):
-    '''Raise custom exception'''
+def raise_http_error(e, format):
+    """Raise custom exception"""
+    exc = defaultdict(lambda:'')
     http_error_class = errors.get(e.code)
     message = e.fp.read() or e.msg
     if http_error_class:
-        raise http_error_class(e.filename, e.code, message, e.hdrs, None)
+        try:
+            if format == 'xml':
+                exc = convert_xml_to_dict(message)
+                exc = exc['reply']
+        except: pass
+        e = http_error_class(e.filename, e.code, exc['error_string'] or message, e.hdrs, None)
+        e.errno = exc['error_code']
+        raise e
     else:
         raise e
 
@@ -86,7 +94,7 @@ class BaseClient(object):
             headers = {'Content-Type': 'application/%s' % format}
             response = self.urlopen(url, query, self.data_encode(data, format), method, headers)
         except urllib2.HTTPError, e:
-            raise_http_error(e)
+            raise_http_error(e, format)
 
         if format == 'xml':
             result = convert_xml_to_dict( response )

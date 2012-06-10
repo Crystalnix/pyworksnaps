@@ -34,7 +34,7 @@ import urllib2
 class BaseException(Exception):
     def __init__(self, *args, **kwargs):
         logging.debug("[python-worksnaps]:" + unicode(s) for s in args)
-        super(BaseException, self).__init__()
+        super(BaseException, self).__init__(*args, **kwargs)
 
 class HTTP400BadRequestError(urllib2.HTTPError, BaseException):
     pass

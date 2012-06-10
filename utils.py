@@ -23,8 +23,11 @@ __ALL__ = ["convert_xml_to_dict", "convert_dict_to_xml"]
 from collections import Container
 from xml.etree import cElementTree as ET
 
-def convert_xml_to_dict( file_like ):
-    root = ET.parse( file_like ).getroot()
+def convert_xml_to_dict( xml_container ):
+    if isinstance(xml_container, basestring):
+        root = ET.fromstring(xml_container)
+    else:
+        root = ET.parse( xml_container ).getroot()
     return {root.tag: convert_xml_to_dict_recursively(root) }
 
 def convert_xml_to_dict_recursively(xmlnode):
